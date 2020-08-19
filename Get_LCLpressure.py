@@ -12,7 +12,7 @@ middleName = '_day_CESM2_amip_r10i1p1f1_gn_'
 varNames   = ['hfls','hfss','mrso','mrsos','tas','hurs','ps']
 
 # Set time period portion of fileNames 
-timeName_flx  = ['19500101-19591231','19600101-19691231','19700101-19791231','19800101-19891231', 
+timeName_flx  = ['19700101-19791231','19800101-19891231', 
                  '19900101-19991231','20000101-20091231','20100101-20150101']
 
 # Read in test file to get lat/lon 
@@ -83,15 +83,20 @@ for iT in range(np.shape(T_degC)[0]):
     
     # Compute pressure level of LCL:
     inner        = ((Tsfc_full.tas[iT,:,:] - Td[iT,:,:]) / 223.15) + 1  # Part inside ()
-    Plcl[iT,:,:] = PS_hPa[iT,:,:]*(inner**(-3.5))
-    
+#    Plcl[iT,:,:] = PS_hPa[iT,:,:]*(inner**(-3.5))
+    Plcl[iT,:,:] = PS_hPa[iT,:,:] - (PS_hPa[iT,:,:]*(inner**(-3.5)))    
+   
     if (iT % 1000)==0: 
         print('Done with ', (iT/23726)*100, ' % of days')
     
+# Looking at Betts (2004), it looks like Plcl is actually the mean depth to cloud base; not just its pressure level
+#   So to get the depth of the layer from sfc to cloud bottom in hPa, need to take Plcl - PS. 
+# Plcl = PS_hPa - Plcl
+
 
 # Save the array with residaul S.T. and S.M. z-scores in it 
 saveDir  = '/Users/meganfowler/Documents/NCAR/Analysis/Coupling_initial/Coupling_CAM6CLM5/processed_data/'
-saveFile = 'LCL-pressure_1950-2014.p' 
+saveFile = 'LCL-pressure-HeightAboveGround_1950-2014.p' 
 
 pickle.dump( Plcl, open( saveDir+saveFile, "wb" ), protocol=4 )
 
