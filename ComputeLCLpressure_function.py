@@ -50,6 +50,7 @@ def ComputeLCLpressure(filesIn,PSname,TSname,RHname,fileOutName):
     # Print information about time range: 
     print('Data starts at: ', sfc_full.time.values[0])
     print('Data ends at:   ', sfc_full.time.values[-1])
+    nT = len(sfc_full.time.values)
           
     # ------- Start computing ----------
 
@@ -83,9 +84,12 @@ def ComputeLCLpressure(filesIn,PSname,TSname,RHname,fileOutName):
         inner        = ((sfc_full[TSname].values[iT,:,:] - Td[iT,:,:]) / 223.15) + 1  # Part inside ()
     #    Plcl[iT,:,:] = PS_hPa[iT,:,:]*(inner**(-3.5))
         Plcl[iT,:,:] = PS_hPa[iT,:,:] - (PS_hPa[iT,:,:]*(inner**(-3.5)))    # Want to get distance above sfc in mb 
-
-        if (iT % 1000)==0: 
-            print('Done with ', (iT/23726)*100, ' % of days')
+        
+        if (iT % round(nT/10))==0: 
+            print('Done with ', (iT/nT)*100, ' % of days')
+            
+    # Add check to set Plcl to zero if it's negative (below the surface pressure)
+    Plcl[Plcl<0] = np.nan
 
     # Looking at Betts (2004), it looks like Plcl is actually the mean depth to cloud base; not just its pressure level
     #   So to get the depth of the layer from sfc to cloud bottom in hPa, need to take Plcl - PS. 
