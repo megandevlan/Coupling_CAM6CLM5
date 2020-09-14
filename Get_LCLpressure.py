@@ -88,6 +88,9 @@ for iT in range(np.shape(T_degC)[0]):
    
     if (iT % 1000)==0: 
         print('Done with ', (iT/23726)*100, ' % of days')
+        
+ # Add check to set Plcl to zero if it's negative (below the surface pressure)
+Plcl[Plcl<0] = np.nan
     
 # Looking at Betts (2004), it looks like Plcl is actually the mean depth to cloud base; not just its pressure level
 #   So to get the depth of the layer from sfc to cloud bottom in hPa, need to take Plcl - PS. 
@@ -96,7 +99,7 @@ for iT in range(np.shape(T_degC)[0]):
 
 # Save the array with residaul S.T. and S.M. z-scores in it 
 saveDir  = '/Users/meganfowler/Documents/NCAR/Analysis/Coupling_initial/Coupling_CAM6CLM5/processed_data/'
-saveFile = 'LCL-pressure-HeightAboveGround_1950-2014.p' 
+saveFile = 'LCL-pressure-HeightAboveGround_1970-2014.p' 
 
 pickle.dump( Plcl, open( saveDir+saveFile, "wb" ), protocol=4 )
 
