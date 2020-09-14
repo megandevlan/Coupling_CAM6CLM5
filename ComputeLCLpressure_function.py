@@ -19,35 +19,37 @@
 # 
 # ==================================================================================================
 
-def ComputeLCLpressure_function(filesIn,PSname,TSname,RHname,fileOutName):
+def ComputeLCLpressure(filesIn,PSname,TSname,RHname,fileOutName):
     # --- Import libraries --- #  
     import numpy as np 
     import xarray as xr 
     import pickle 
     
+    filesIn = np.asarray(filesIn).astype(str)
     nFiles = len(filesIn)
+    print('Number of files: \n\n', nFiles)
     
     for iFile in range(nFiles): 
         # Read in files and get time as usable format 
         file  = filesIn[iFile]
         sfcDF = xr.open_dataset(file, decode_times=True)
         sfcDF['time'] = sfcDF.indexes['time'].to_datetimeindex()
-        print('File %i finished reading in...' % iFile+1)
+        print('File %i finished reading in...' % (iFile+1.))
         
         if iFile==0: 
             sfc_full = sfcDF 
         if (iFile>0) & (nFiles>1): 
             # Concat in one array 
             sfc_full  = xr.concat([sfc_full, sfcDF], dim="time")
-            print('File %i concatenated' % iFile+1) 
+            print('File %i concatenated' % (iFile+1.)) 
             
     # Get lat and lon 
     lat = sfc_full.lat.values
     lon = sfc_full.lon.values 
     
     # Print information about time range: 
-    print('Data starts at: ', sfc_full.time.values[0]
-    print('Data ends at:   ', sfc_full.time.values[-1]
+    print('Data starts at: ', sfc_full.time.values[0])
+    print('Data ends at:   ', sfc_full.time.values[-1])
           
     # ------- Start computing ----------
 
@@ -78,7 +80,7 @@ def ComputeLCLpressure_function(filesIn,PSname,TSname,RHname,fileOutName):
         Td[iT,:,:] = (numerator/denominator) + 273.15   #Convert to K here too 
 
         # Compute pressure level of LCL:
-        inner        = ((Tsfc_full.tas[iT,:,:] - Td[iT,:,:]) / 223.15) + 1  # Part inside ()
+        inner        = ((sfc_full[TSname].values[iT,:,:] - Td[iT,:,:]) / 223.15) + 1  # Part inside ()
     #    Plcl[iT,:,:] = PS_hPa[iT,:,:]*(inner**(-3.5))
         Plcl[iT,:,:] = PS_hPa[iT,:,:] - (PS_hPa[iT,:,:]*(inner**(-3.5)))    # Want to get distance above sfc in mb 
 
@@ -102,4 +104,4 @@ def ComputeLCLpressure_function(filesIn,PSname,TSname,RHname,fileOutName):
     # ===========================================================================
     
     # Return statement (what to give back to user) 
-    return(filePath)
+    return(fileOutName)
