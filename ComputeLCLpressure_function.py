@@ -26,22 +26,26 @@ def ComputeLCLpressure(filesIn,PSname,TSname,RHname,fileOutName):
     import pickle 
     
     filesIn = np.asarray(filesIn).astype(str)
-    nFiles = len(filesIn)
+    nFiles = filesIn.size
     print('Number of files: \n\n', nFiles)
     
-    for iFile in range(nFiles): 
-        # Read in files and get time as usable format 
-        file  = filesIn[iFile]
-        sfcDF = xr.open_dataset(file, decode_times=True)
-        sfcDF['time'] = sfcDF.indexes['time'].to_datetimeindex()
-        print('File %i finished reading in...' % (iFile+1.))
-        
-        if iFile==0: 
-            sfc_full = sfcDF 
-        if (iFile>0) & (nFiles>1): 
-            # Concat in one array 
-            sfc_full  = xr.concat([sfc_full, sfcDF], dim="time")
-            print('File %i concatenated' % (iFile+1.)) 
+    if nFiles==1:
+        sfc_full         = xr.open_dataset(str(filesIn), decode_times=True)
+        sfc_full['time'] = sfc_full.indexes['time'].to_datetimeindex()
+    else:
+        for iFile in range(nFiles): 
+            # Read in files and get time as usable format 
+            file  = filesIn[iFile]
+            sfcDF = xr.open_dataset(file, decode_times=True)
+            sfcDF['time'] = sfcDF.indexes['time'].to_datetimeindex()
+            print('File %i finished reading in...' % (iFile+1.))
+
+            if iFile==0: 
+                sfc_full = sfcDF 
+            if (iFile>0) & (nFiles>1): 
+                # Concat in one array 
+                sfc_full  = xr.concat([sfc_full, sfcDF], dim="time")
+                print('File %i concatenated' % (iFile+1.)) 
             
     # Get lat and lon 
     lat = sfc_full.lat.values
