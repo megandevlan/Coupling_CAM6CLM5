@@ -575,7 +575,7 @@ def HCF(DF, Tname, Qname, Zname, Pname, nlevs):
             # do zz=ibot,itop
             for izz in range(len(zz_levs)):
                 zz = zz_levs[izz]
-                integral[zz]    =  np.sum(  (cp_g)  *  0.5*(yaxis[zz:itop]+yaxis1[zz:itop])  * 
+                integral[zz]    =  np.nansum(  (cp_g)  *  0.5*(yaxis[zz:itop]+yaxis1[zz:itop])  * 
                                           (xaxis[zz:itop]-xaxis1[zz:itop]) )
                 below   [zz+1]  =  (cp_g)  *  yaxis[zz+1]    *  (xaxis[ibot] - xaxis[zz+1])
 
