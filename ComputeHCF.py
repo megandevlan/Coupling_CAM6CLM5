@@ -420,7 +420,8 @@ def HCF(DF, Tname, Qname, Zname, Pname, nlevs):
         TRAN_H     =  np.nan
         # End program here 
         sat_flag=1 
-        # print('Saturation threshold already reached! Ending program.')
+#         print('TDEF<=0')
+#         print('Saturation threshold already reached! Ending program.')
 
     # Check again to make sure we shouldn't be stopping here...
     if sat_flag==0: 
@@ -432,7 +433,7 @@ def HCF(DF, Tname, Qname, Zname, Pname, nlevs):
 
         # Difference between reference potential temperature [K]
         # where( pot_k.ne.missing .and. press.ne.missing .and. tmp_k.gt.0 )   pot_diff  =  pbl_pot - pot_k
-        iCalc = np.where(tmp_k>0)[0]
+        iCalc            = np.where(tmp_k>0)[0]
         pot_diff[iCalc]  =  pbl_pot  - pot_k[iCalc] 
 
         #***********************************************************
@@ -453,7 +454,7 @@ def HCF(DF, Tname, Qname, Zname, Pname, nlevs):
             # i_buoy   =   minloc( pbar, DIM = 1, MASK = pot_diff.ne.missing .and. pot_diff.gt.0 )
             iMask       = np.where( (~np.isnan(pot_diff)) & (pot_diff>0) )[0]
             pbar_masked = pbar[iMask]
-            i_buoy      = np.where(pbar==np.min(pbar_masked))[0]
+            i_buoy      = np.where(pbar==np.nanmin(pbar_masked))[0]
         else:
             i_buoy = 0
 
@@ -463,9 +464,10 @@ def HCF(DF, Tname, Qname, Zname, Pname, nlevs):
             # i_nobuoy =   maxloc( pbar, DIM = 1, MASK = pot_diff.ne.missing .and. pot_diff.le.0 )
             iMask = np.where( (~np.isnan(pot_diff)) & (pot_diff<=0))[0]
             pbar_masked = pbar[iMask]
-            i_nobuoy = np.where(pbar==np.max(pbar_masked))[0]
+            i_nobuoy = np.where(pbar==np.nanmax(pbar_masked))[0]
         else:
             i_nobuoy = -1    # MDF: Set to -1 instead of 0, since 0 is first index in Py (but not F90)
+
 
         # -----------------------------------------------
         #  Check to make sure not all layers are buoyant (not physical)
@@ -473,13 +475,7 @@ def HCF(DF, Tname, Qname, Zname, Pname, nlevs):
         if i_nobuoy==-1: 
             print('=========== ERROR  in locating saturation profiles ============')
             sat_flag = 1 
-            TRAN_H  = np.nan
-            TRAN_P  = np.nan
-            TRAN_T  = np.nan
-            SHDEF_M = np.nan
-            LHDEF_M = np.nan
-            EADV_M  = np.nan
-           # print('   Terminating program. ')
+            print('   Terminating program. DO NOT USE EVALUTATION VARIABLE OUTPUT  ')
 
     # Check again that it's safe to keep computing...
     if sat_flag==0:
@@ -553,7 +549,8 @@ def HCF(DF, Tname, Qname, Zname, Pname, nlevs):
         # itop    =   minloc( xaxis1,  DIM = 1, MASK = xaxis1.gt.pthresh .and. xaxis1.ne.missing )
         iMask         = np.where((~np.isnan(xaxis1)) & (xaxis1>pthresh))[0]
         xaxis1_masked = xaxis1[iMask]
-        itop          = int(np.where(xaxis1==np.nanmin(xaxis1_masked))[0])
+        itop          = np.where(xaxis1==np.nanmin(xaxis1_masked))[0]
+
         ibot          = 0 
         nbot          = itop - ibot + 1
         if np.isfinite(psfc):
@@ -568,15 +565,15 @@ def HCF(DF, Tname, Qname, Zname, Pname, nlevs):
         else:
             between =   (cp_g)  *  0.5*(yaxis1[itop]+tthresh)  *  (xaxis1[itop]-pthresh)
 
-
             # MDF: Defining array of levels to care about
-            zz_levs = np.arange(ibot,itop,1).astype(int)
+            #zz_levs = np.arange(ibot,itop,1).astype(int)
+            zz_levs = np.arange(ibot,itop+1,1).astype(int)
 
             # do zz=ibot,itop
             for izz in range(len(zz_levs)):
                 zz = zz_levs[izz]
-                integral[zz]    =  np.nansum(  (cp_g)  *  0.5*(yaxis[zz:itop]+yaxis1[zz:itop])  * 
-                                          (xaxis[zz:itop]-xaxis1[zz:itop]) )
+                integral[zz]    =  np.nansum(  (cp_g)  *  0.5*(yaxis[zz:itop[0]+1]+yaxis1[zz:itop[0]+1])  * 
+                                          (xaxis[zz:itop[0]+1]-xaxis1[zz:itop[0]+1]) )
                 below   [zz+1]  =  (cp_g)  *  yaxis[zz+1]    *  (xaxis[ibot] - xaxis[zz+1])
 
         # -----------------------------------------------
@@ -614,11 +611,12 @@ def HCF(DF, Tname, Qname, Zname, Pname, nlevs):
                 between0  =  0.0
         else:
             #*** explicit layer and BCL
-            between0   =           (cp_g) * 0.5*(yaxis1[itop] + tthresh) *  (xaxis1[itop] - pthresh)
-            integral0  =   np.sum( (cp_g) * 0.5*(yaxis[ibot:itop] + yaxis1[ibot:itop])  *  (xaxis[ibot:itop] - xaxis1[ibot:itop]) )
+            between0   =              (cp_g) * 0.5*(yaxis1[itop] + tthresh) *  (xaxis1[itop] - pthresh)
+            integral0  =   np.nansum( (cp_g) * 0.5*(yaxis[ibot:itop+1] + yaxis1[ibot:itop+1])  *  (xaxis[ibot:itop+1] - xaxis1[ibot:itop+1]) )
             #*** explicit layer and PBL
             between0   =   between0  +  ((cp_g)  *  0.5*(yaxis[ibot] + pbl_pot) * (pbl_p  - xaxis [ibot]))
             below0     =                 (cp_g)  *  pbl_pot *  (psfc - pbl_p)
+
 
         # -----------------------------------------------
         #   Calculate the Sensible Heat Deficit [J/m2]
@@ -634,7 +632,6 @@ def HCF(DF, Tname, Qname, Zname, Pname, nlevs):
         iCheck  = np.where( (press<BCLP) | (np.isnan(press)) )[0]
         shdef[iCheck] = 0.0
         SHDEF_M   =   total  -  integral0  -  between0  -  below0
-
 
 
         #*************************************************
@@ -669,7 +666,7 @@ def HCF(DF, Tname, Qname, Zname, Pname, nlevs):
         iZero           = np.where((press<BCLP) | (np.isnan(press)))[0]
         lhdef[iZero]    = 0 
 
-        if psfc-pbl_p<=0: 
+        if (psfc-pbl_p)<=0: 
             LHDEF_M   =   Lv_g  *  pbl_qdef  *  (dpress[0])
         else: 
             LHDEF_M   =   Lv_g  *  pbl_qdef  *  (psfc - pbl_p)
@@ -697,7 +694,7 @@ def HCF(DF, Tname, Qname, Zname, Pname, nlevs):
             TRAN_T  =  np.nan
             TRAN_H  =  np.nan
 
-            # print(' ***** NO TRANSITION IS PRESENT. RETURNING. *****')
+#             print(' ***** NO TRANSITION IS PRESENT. RETURNING. [1] *****')
             sat_flag = 1
 
     # Continue with calculations if appropriate
@@ -719,6 +716,7 @@ def HCF(DF, Tname, Qname, Zname, Pname, nlevs):
 
         # iafter  =  minloc( hgt, DIM = 1,  MASK = eadv_0.gt.0  .and.  eadv_0.ne.missing )  !location right after transition
         iMask    = np.where((eadv_0>0) & (~np.isnan(eadv_0)))[0]
+
         if len(iMask>0):
             hgt_mask = hgt[iMask]
             iafter   = np.where(hgt==np.nanmin(hgt_mask))[0] 
@@ -733,7 +731,7 @@ def HCF(DF, Tname, Qname, Zname, Pname, nlevs):
             TRAN_T  =  np.nan
             TRAN_H  =  np.nan
 
-            # print(' ***** NO TRANSITION IS PRESENT. RETURNING. *****')
+#             print(' ***** NO TRANSITION IS PRESENT. RETURNING. [2] *****')
             sat_flag = 1
 
     # Check that we should still be computing things: 
@@ -754,7 +752,10 @@ def HCF(DF, Tname, Qname, Zname, Pname, nlevs):
 
         y_hi    =  hgt[iafter]
         y_lo    =  hgt[ibefore]
-        TRAN_H  =  y_hi -  (((y_hi-y_lo)/(x_hi-x_lo)) * x_hi)        
+        TRAN_H  =  y_hi -  (((y_hi-y_lo)/(x_hi-x_lo)) * x_hi)
+
+#         print('**** DONE WITH HCF CACLULATIONS *****')
+
     
     
     return(TBM, BCLH, BCLP, TDEF, TRAN_H, TRAN_P, TRAN_T, SHDEF_M, LHDEF_M, EADV_M)
