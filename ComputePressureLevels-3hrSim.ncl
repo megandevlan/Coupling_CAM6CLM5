@@ -11,8 +11,8 @@ begin
 
 ; -------- Read in data --------
 
-filePS = "/Users/mdfowler/Documents/Analysis/Coupling_initial/data/3hrSim_CAM6-CLM45/f.e21.FHIST.f09_f09.cesm2_cam6_clm4p5.001.cam.h4.1982_conusAllTimes-VertProfiles.nc"
-fileOut = "/Users/mdfowler/Documents/Analysis/Coupling_initial/data/3hrSim_CAM6-CLM45/f.e21.FHIST.f09_f09.cesm2_cam6_clm4p5.001.cam.h4.1982_conus-Pressure-UTCtimes.nc"
+filePS  = "/Users/mdfowler/Documents/Analysis/Coupling_initial/data/3hrSim_CAM6-CLM5/f.e21.FHIST.f09_f09.cesm2_cam6_clm5.001.cam.h4.1982_conusAllTimes-VertProfiles.nc"
+fileOut = "/Users/mdfowler/Documents/Analysis/Coupling_initial/data/3hrSim_CAM6-CLM5/f.e21.FHIST.f09_f09.cesm2_cam6_clm5.001.cam.h4.1982_conus-Pressure-UTCtimes.nc"
 
 ; Open file with surface pressure
 fPS = addfile(filePS,"r")
