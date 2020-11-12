@@ -339,7 +339,7 @@ def HCF(DF, Tname, Qname, Zname, Pname, nlevs):
         # If not, there's a problem. 
         # -----------------------------------------------
         if ((i_unsat==0) | (i_sat==0)):
-            print('=========== ERROR  in locating saturation profiles ============')
+            # print('=========== ERROR  in locating saturation profiles ============')
             sat_flag=1 
             pot2m = np.nan
             BCLP  = np.nan
