@@ -37,9 +37,13 @@
 #   EADV_M    --   Energy advantage of mixed layer [-]
 # 
 # ==================================================================================================
+from numba import jit
+import numpy as np
+@jit
+
 def HCF(DF, Tname, Qname, Zname, Pname, nlevs): 
     # Import libraries 
-    import numpy as np 
+    # import numpy as np 
     
     # -----------------------------------------------
     #  Get profile data into individual arrays
